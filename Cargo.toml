@@ -1,0 +1,12 @@
+[package]
+name = "balancetf-bot"
+version = "0.1.0"
+authors = ["rrredface"]
+
+[dependencies]
+serde = "^1.0"
+serde_derive = "^1.0"
+toml = "^0.4"
+serenity = "^0.5"
+
+
