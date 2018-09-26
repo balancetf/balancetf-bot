@@ -27,8 +27,12 @@ impl EventHandler for Handler {
         let ref content = msg.content;
         if content.starts_with(&self.config.cmd_prefix) {
             let label = get_label(&msg, &self.config);
+            let sender = match &msg.member {
+                Some(m) => { m }
+                None => { return } // early out if the message wasn't sent in a guild
+            };
             for cmd in self.commands.iter() {
-                if cmd.label == label {
+                if cmd.label == label && self.config.user_has_perm(&sender, &cmd.perm) {
                     cmd.exec(&msg);
                 }
             }
@@ -51,6 +55,7 @@ fn main() {
             label: "ping".into(),
             desc: "pong".into(),
             help: "Syntax: `ping`".into(),
+            perm: "btf.ping".into(),
             run: |msg| {
                 msg.channel_id.say("pong").unwrap();
                 Result::Ok
@@ -100,7 +105,7 @@ fn load_config(path: &Path) -> Config {
                     }
                 }
                 Error::TomlDeserialize(e) => {
-                    panic!("Config is not valid TOML: {:?}", e);
+                    panic!("Couldn't load config: {:?}", e);
                 }
                 _ => {
                     unreachable!();
@@ -129,8 +134,4 @@ fn save_config(path: &Path, config: &Config) {
             }
         }
     }
-}
-
-fn start_vote(msg: &Message) {
-
 }
