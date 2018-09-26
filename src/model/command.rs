@@ -14,6 +14,8 @@ pub struct Command
     /// A more thorough explanation of the command and how to use it. This is shown when a user
     /// incorrectly uses a command.
     pub help: String,
+    /// The permission a role must have to execute the command.
+    pub perm: String,
     /// The function that gets run when the command is invoked.
     pub run: fn(&Message) -> Result,
 }
