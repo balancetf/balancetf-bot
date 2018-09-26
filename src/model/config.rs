@@ -11,6 +11,8 @@ use toml; // cargo spews errors without this line
 pub struct Config {
     /// The prefix prepended to commands. Default is "!"
     pub cmd_prefix: String,
+    /// The Discord role ID for normal members.
+    pub member_role: u64,
     /// The Discord role ID for keynote members.
     pub keynote_role: u64,
     /// The number of hours voting will be open when a new vote is created. Default is 24.
@@ -27,7 +29,8 @@ impl Default for Config {
     fn default() -> Config {
         Config {
             cmd_prefix: "!".into(),
-            keynote_role: 0,
+            member_role: 0,
+            keynote_role: 1,
             vote_hours: 24,
             channel_announce: 0,
             channel_vote: 0,

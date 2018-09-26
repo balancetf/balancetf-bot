@@ -10,28 +10,37 @@ use model::config::Config;
 use model::error::Error;
 use serenity::client::{Client, EventHandler};
 use serenity::model::channel::Message;
+use serenity::model::guild::Member;
+use serenity::model::id::GuildId;
 use serenity::prelude::Context;
 use std::env;
 
 mod model;
 
-const CMD_PREFIX: &str = "!";
-
 struct Handler {
+    config: Config,
     commands: Vec<Command>,
 }
 
 impl EventHandler for Handler {
     fn message(&self, _: Context, msg: Message) {
         let ref content = msg.content;
-        if content.starts_with(&CMD_PREFIX) {
-            let label = get_label(&msg);
+        if content.starts_with(&self.config.cmd_prefix) {
+            let label = get_label(&msg, &self.config);
             for cmd in self.commands.iter() {
                 if cmd.label == label {
                     cmd.exec(&msg);
                 }
             }
         }
+    }
+    fn guild_member_addition(&self, _: Context, _: GuildId, mut member: Member) {
+        match member.add_role(self.config.member_role) {
+            Ok(_) => {}
+            Err(why) => {
+                println!("Error assigning member role to new member:\n{:?}", why);
+            }
+        };
     }
 }
 
@@ -53,22 +62,23 @@ fn main() {
     cd.push("conf.toml");
 
     // Check for config, create default if not found
-    load_config(&cd);
+    let config = load_config(&cd);
 
     // Start the client
-    let mut client = Client::new(&env::var("D_TOKEN").expect("No token specified."), Handler { commands }).expect("Error creating client.");
+    let mut client = Client::new(&env::var("D_TOKEN").expect("No token specified."), Handler { config, commands }).expect("Error creating client.");
     if let Err(why) = client.start() {
         println!("Error while running the client: {:?}", why);
     }
 }
 
-fn parse(msg: &Message) -> (&str, Vec<&str>) {
+fn get_args(msg: &Message) -> Vec<&str> {
     let mut args: Vec<&str> = msg.content.split(" ").collect();
-    (args.remove(0).trim_left_matches(&CMD_PREFIX), args)
+    args.remove(0);
+    args
 }
-fn get_label(msg: &Message) -> &str {
+fn get_label<'a, 'b>(msg: &'a Message, cfg: &'b Config) -> &'a str {
     let mut split = msg.content.splitn(2, " ");
-    split.next().unwrap().trim_left_matches(&CMD_PREFIX) // this will never be called on an empty message so this shouldn't be able to fail
+    split.next().unwrap().trim_left_matches(&cfg.cmd_prefix) // this will never be called on an empty message so this shouldn't be able to fail
 }
 
 fn load_config(path: &Path) -> Config {
