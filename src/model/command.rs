@@ -1,7 +1,6 @@
 
 use serenity::model::channel::Message;
 
-// TODO permissions
 /// A representation of a command that users can type in chat.
 pub struct Command
 {
