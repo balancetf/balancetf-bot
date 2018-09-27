@@ -5,6 +5,7 @@ use toml::ser::Error as SerError;
 use toml::de::Error as DeError;
 
 /// Errors that can occur while the bot is running.
+#[derive(Debug)]
 pub enum Error {
     /// An I/O operation failed.
     Io(IoError),
@@ -22,14 +23,21 @@ impl From<IoError> for Error {
     }
 }
 
-impl From<DeError> for Error {
-    fn from(error: DeError) -> Self {
-        Error::TomlDeserialize(error)
+impl From<DiscordError> for Error {
+    fn from(error: DiscordError) -> Self {
+        Error::Discord(error)
     }
-}
+}   
 
 impl From<SerError> for Error {
     fn from(error: SerError) -> Self {
         Error::TomlSerialize(error)
     }
 }
+
+impl From<DeError> for Error {
+    fn from(error: DeError) -> Self {
+        Error::TomlDeserialize(error)
+    }
+}
+

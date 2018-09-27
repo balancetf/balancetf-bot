@@ -60,6 +60,13 @@ fn main() {
                 msg.channel_id.say("pong").unwrap();
                 Result::Ok
             }
+        },
+        Command {
+            label: "purge".into(),
+            desc: "Bulk delete past messages in a channel.".into(),
+            help: "Syntax: `purge <count>`".into(),
+            perm: "btf.purge".into(),
+            run: purge
         }
     ];
 
@@ -132,6 +139,45 @@ fn save_config(path: &Path, config: &Config) {
                     unreachable!();
                 }
             }
+        }
+    }
+}
+
+// This function only works once, for some god forsaken reason.
+// It's a problem with serenity that can't be fixed here.
+fn purge(msg: &Message) -> Result {
+    let channel = msg.channel_id;
+    let args = get_args(msg);
+    match args.len() {
+        len @ 1 ... 2 => {
+            let mut count = match u64::from_str_radix(args[0], 10) {
+                Ok(n) => n,
+                Err(_why) => {
+                    return Result::InvalidArg("Count must be a positive integer. Numbers >100 will be clamped to 100.".into())
+                },
+            };
+            if len == 2 {
+                //TODO case to only purge 1 user's messages
+            }
+            if count > 100 {
+                count = 100;
+            }
+            let messages = match channel.messages(|g| g.before(&msg.id).limit(count)) {
+                Ok(m) => m,
+                Err(why) => {
+                  return Result::Error(Error::Discord(why))
+                },
+            };
+            match channel.delete_messages(messages) {
+                Ok(_) => {},
+                Err(why) => {
+                    return Result::Error(Error::Discord(why))
+                }
+            }
+            return Result::Ok
+        }
+        _ => {
+            return Result::Syntax
         }
     }
 }

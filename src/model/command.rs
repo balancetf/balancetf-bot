@@ -1,5 +1,6 @@
 
 use serenity::model::channel::Message;
+use super::error::Error;
 
 /// A representation of a command that users can type in chat.
 pub struct Command
@@ -25,9 +26,24 @@ impl Command {
         match (self.run)(msg) {
             Result::Ok => {}
             Result::Syntax => {
-                let _ = msg.channel_id.say(&self.help).map_err(|why| {
-                    println!("Error providing help for '{}' command:\n {:?}", &self.label, why);
-                });
+                match msg.channel_id.say(&self.help) {
+                    Ok(_) => {}
+                    Err(why) => {
+                        println!("Error sending help message for command:{}\nReason:\n{}", &self.label, why);
+                    }
+                }
+            }
+            Result::InvalidArg(explain) => {
+                match msg.channel_id.say(&explain) {
+                    Ok(_) => {}
+                    Err(why) => {
+                        println!("Error sending help message for command:{}\nReason:\n{}", &self.label, why);
+                    }
+                }
+
+            }
+            Result::Error(why) => {
+                println!("Error when running command: {}\nReason:\n{:?}", &self.label, why);
             }
         }
     }
@@ -39,6 +55,10 @@ pub enum Result {
     Ok,
     /// The user invoked the command with invalid syntax.
     Syntax,
+    /// The user made an error when running the command.
+    InvalidArg(String),
+    /// An error occured that wasn't the user's fault.
+    Error(Error),
 }
 
 // When commands are added that can error, a custom error type should be implemented here, with an
