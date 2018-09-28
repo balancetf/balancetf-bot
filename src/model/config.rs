@@ -15,16 +15,16 @@ pub struct Config {
     pub cmd_prefix: String,
     /// The Discord role ID for normal members.
     pub member_role: u64,
-    /// The Discord role ID for keynote members.
-    pub keynote_role: u64,
-    /// The number of hours voting will be open when a new vote is created. Default is 24.
-    pub vote_hours: u32,
+    /// The Discord role ID for casual players.
+    pub casual_role: u64,
+    /// The Discord role ID for competitive players.
+    pub comp_role: u64,
+    /// The number of minutes voting will be open when a new vote is created. Default is 1440 (24h).
+    pub vote_minutes: u64,
     /// The Discord channel ID in which votes will be announced.
     pub channel_announce: u64,
-    /// The Discord channel ID in which normal members can vote.
+    /// The Discord channel ID in which users can vote.
     pub channel_vote: u64,
-    /// The Discord channel ID in which keynote members can vote.
-    pub channel_keynote: u64,
     /// The permissions section.
     pub permissions: BTreeMap<String, Vec<String>>,
 }
@@ -34,11 +34,11 @@ impl Default for Config {
         Config {
             cmd_prefix: "!".into(),
             member_role: 0,
-            keynote_role: 1,
-            vote_hours: 24,
+            casual_role: 0,
+            comp_role: 0,
+            vote_minutes: 1440,
             channel_announce: 0,
             channel_vote: 0,
-            channel_keynote: 1, // this needs to be different from channel_vote
             permissions: Default::default(),
         }
     }
