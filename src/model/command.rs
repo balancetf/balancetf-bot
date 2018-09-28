@@ -1,9 +1,7 @@
-
 use serenity::model::channel::Message;
 
 /// A representation of a command that users can type in chat.
-pub struct Command
-{
+pub struct Command {
     /// The label of the command. This is what users type to invoke the command.
     /// For example, if `label` is `help`, then "!help" would be used to invoke it, assuming cmd
     /// prefix is !.
@@ -26,7 +24,10 @@ impl Command {
             Result::Ok => {}
             Result::Syntax => {
                 let _ = msg.channel_id.say(&self.help).map_err(|why| {
-                    println!("Error providing help for '{}' command:\n {:?}", &self.label, why);
+                    println!(
+                        "Error providing help for '{}' command:\n {:?}",
+                        &self.label, why
+                    );
                 });
             }
         }

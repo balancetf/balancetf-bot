@@ -1,4 +1,3 @@
-
 /// A vote on a proposed change.
 pub struct Vote {
     /// Vote ID.
@@ -29,6 +28,9 @@ impl Vote {
     }
     /// Gets the total yes and no votes, regardless of casual/comp.
     pub fn total(&self) -> (u64, u64) {
-        (self.casual_yes + self.comp_yes, self.casual_no + self.comp_no)
+        (
+            self.casual_yes + self.comp_yes,
+            self.casual_no + self.comp_no,
+        )
     }
 }

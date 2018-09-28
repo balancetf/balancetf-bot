@@ -1,11 +1,10 @@
-
-use std::default::Default;
-use std::io::{Read, Write};
-use std::fs::OpenOptions;
-use std::path::Path;
 use super::error::Error;
-use std::collections::BTreeMap;
 use serenity::model::guild::PartialMember;
+use std::collections::BTreeMap;
+use std::default::Default;
+use std::fs::OpenOptions;
+use std::io::{Read, Write};
+use std::path::Path;
 use toml; // cargo spews errors without this line
 
 /// A representation of the options that can be changed for the bot.
@@ -64,10 +63,7 @@ impl Config {
     /// Save a Config to file.
     pub fn save(&self, path: &Path) -> Result<(), Error> {
         // Open file for writing. Errors if the file can't be opened.
-        let mut file = OpenOptions::new()
-            .write(true)
-            .create(true)
-            .open(path)?;
+        let mut file = OpenOptions::new().write(true).create(true).open(path)?;
         // Serialize Config to TOML.
         let content = toml::to_string_pretty(self)?;
         // Write content to file.
@@ -79,7 +75,7 @@ impl Config {
             let id = role.as_u64().to_string();
             if let Some(group) = &self.permissions.get(&id) {
                 if group.contains(&value.to_string()) {
-                    return true
+                    return true;
                 }
             }
         }
