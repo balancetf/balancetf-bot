@@ -1,10 +1,8 @@
-
-use serenity::model::channel::Message;
 use super::error::Error;
+use serenity::model::channel::Message;
 
 /// A representation of a command that users can type in chat.
-pub struct Command
-{
+pub struct Command {
     /// The label of the command. This is what users type to invoke the command.
     /// For example, if `label` is `help`, then "!help" would be used to invoke it, assuming cmd
     /// prefix is !.
@@ -25,25 +23,29 @@ impl Command {
     pub fn exec(&self, msg: &Message) {
         match (self.run)(msg) {
             Result::Ok => {}
-            Result::Syntax => {
-                match msg.channel_id.say(&self.help) {
-                    Ok(_) => {}
-                    Err(why) => {
-                        println!("Error sending help message for command:{}\nReason:\n{}", &self.label, why);
-                    }
+            Result::Syntax => match msg.channel_id.say(&self.help) {
+                Ok(_) => {}
+                Err(why) => {
+                    println!(
+                        "Error sending help message for command:{}\nReason:\n{}",
+                        &self.label, why
+                    );
                 }
-            }
-            Result::InvalidArg(explain) => {
-                match msg.channel_id.say(&explain) {
-                    Ok(_) => {}
-                    Err(why) => {
-                        println!("Error sending help message for command:{}\nReason:\n{}", &self.label, why);
-                    }
+            },
+            Result::InvalidArg(explain) => match msg.channel_id.say(&explain) {
+                Ok(_) => {}
+                Err(why) => {
+                    println!(
+                        "Error sending help message for command:{}\nReason:\n{}",
+                        &self.label, why
+                    );
                 }
-
-            }
+            },
             Result::Error(why) => {
-                println!("Error when running command: {}\nReason:\n{:?}", &self.label, why);
+                println!(
+                    "Error when running command: {}\nReason:\n{:?}",
+                    &self.label, why
+                );
             }
         }
     }

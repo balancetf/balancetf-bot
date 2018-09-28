@@ -1,10 +1,9 @@
-#[macro_use] extern crate serde_derive;
+#[macro_use]
+extern crate serde_derive;
 extern crate serde;
 extern crate serenity;
 extern crate toml;
 
-use std::path::Path;
-use std::io::ErrorKind;
 use model::command::{Command, Result};
 use model::config::Config;
 use model::error::Error;
@@ -14,6 +13,8 @@ use serenity::model::guild::Member;
 use serenity::model::id::GuildId;
 use serenity::prelude::Context;
 use std::env;
+use std::io::ErrorKind;
+use std::path::Path;
 
 mod model;
 
@@ -28,8 +29,8 @@ impl EventHandler for Handler {
         if content.starts_with(&self.config.cmd_prefix) {
             let label = get_label(&msg, &self.config);
             let sender = match &msg.member {
-                Some(m) => { m }
-                None => { return } // early out if the message wasn't sent in a guild
+                Some(m) => m,
+                None => return, // early out if the message wasn't sent in a guild
             };
             for cmd in self.commands.iter() {
                 if cmd.label == label && self.config.user_has_perm(&sender, &cmd.perm) {
@@ -50,7 +51,7 @@ impl EventHandler for Handler {
 
 fn main() {
     // TODO Create commands list
-    let commands = vec! [
+    let commands = vec![
         Command {
             label: "ping".into(),
             desc: "pong".into(),
@@ -59,15 +60,15 @@ fn main() {
             run: |msg| {
                 msg.channel_id.say("pong").unwrap();
                 Result::Ok
-            }
+            },
         },
         Command {
             label: "purge".into(),
             desc: "Bulk delete past messages in a channel.".into(),
             help: "Syntax: `purge <count>`".into(),
             perm: "btf.purge".into(),
-            run: purge
-        }
+            run: purge,
+        },
     ];
 
     let mut cd = env::current_dir().unwrap();
@@ -77,7 +78,11 @@ fn main() {
     let config = load_config(&cd);
 
     // Start the client
-    let mut client = Client::new(&env::var("D_TOKEN").expect("No token specified."), Handler { config, commands }).expect("Error creating client.");
+    let mut client = Client::new(
+        &env::var("D_TOKEN").expect("No token specified."),
+        Handler { config, commands },
+    )
+    .expect("Error creating client.");
     if let Err(why) = client.start() {
         println!("Error while running the client: {:?}", why);
     }
@@ -95,22 +100,20 @@ fn get_label<'a, 'b>(msg: &'a Message, cfg: &'b Config) -> &'a str {
 
 fn load_config(path: &Path) -> Config {
     let config: Config = match Config::load(path) {
-        Ok(config) => { config }
+        Ok(config) => config,
         Err(why) => {
             match why {
-                Error::Io(e) => {
-                    match e.kind() {
-                        ErrorKind::NotFound => {
-                            println!("No config file found, creating default.");
-                            let config: Config = Default::default();
-                            save_config(path, &config);
-                            return config
-                        }
-                        _ => {
-                            panic!("Couldn't load config file, ensure it is readable.");
-                        }
+                Error::Io(e) => match e.kind() {
+                    ErrorKind::NotFound => {
+                        println!("No config file found, creating default.");
+                        let config: Config = Default::default();
+                        save_config(path, &config);
+                        return config;
                     }
-                }
+                    _ => {
+                        panic!("Couldn't load config file, ensure it is readable.");
+                    }
+                },
                 Error::TomlDeserialize(e) => {
                     panic!("Couldn't load config: {:?}", e);
                 }
@@ -119,27 +122,24 @@ fn load_config(path: &Path) -> Config {
                 }
             };
         }
-
     };
     config
 }
 
 fn save_config(path: &Path, config: &Config) {
     match config.save(path) {
-        Ok(_) => {},
-        Err(why) => {
-            match why {
-                Error::Io(e) => {
-                    println!("Error saving default config: {:?}", e);
-                }
-                Error::TomlSerialize(e) => {
-                    panic!("Failed to serialize config: {:?}", e);
-                }
-                _ => {
-                    unreachable!();
-                }
+        Ok(_) => {}
+        Err(why) => match why {
+            Error::Io(e) => {
+                println!("Error saving default config: {:?}", e);
             }
-        }
+            Error::TomlSerialize(e) => {
+                panic!("Failed to serialize config: {:?}", e);
+            }
+            _ => {
+                unreachable!();
+            }
+        },
     }
 }
 
@@ -149,13 +149,15 @@ fn purge(msg: &Message) -> Result {
     let channel = msg.channel_id;
     let args = get_args(msg);
     match args.len() {
-        len @ 1 ... 2 => {
-            let mut count = match u64::from_str_radix(args[0], 10) {
-                Ok(n) => n,
-                Err(_why) => {
-                    return Result::InvalidArg("Count must be a positive integer. Numbers >100 will be clamped to 100.".into())
-                },
-            };
+        len @ 1...2 => {
+            let mut count =
+                match u64::from_str_radix(args[0], 10) {
+                    Ok(n) => n,
+                    Err(_why) => return Result::InvalidArg(
+                        "Count must be a positive integer. Numbers >100 will be clamped to 100."
+                            .into(),
+                    ),
+                };
             if len == 2 {
                 //TODO case to only purge 1 user's messages
             }
@@ -164,20 +166,14 @@ fn purge(msg: &Message) -> Result {
             }
             let messages = match channel.messages(|g| g.before(&msg.id).limit(count)) {
                 Ok(m) => m,
-                Err(why) => {
-                  return Result::Error(Error::Discord(why))
-                },
+                Err(why) => return Result::Error(Error::Discord(why)),
             };
             match channel.delete_messages(messages) {
-                Ok(_) => {},
-                Err(why) => {
-                    return Result::Error(Error::Discord(why))
-                }
+                Ok(_) => {}
+                Err(why) => return Result::Error(Error::Discord(why)),
             }
-            return Result::Ok
+            return Result::Ok;
         }
-        _ => {
-            return Result::Syntax
-        }
+        _ => return Result::Syntax,
     }
 }

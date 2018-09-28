@@ -1,8 +1,7 @@
-
-use std::io::Error as IoError;
 use serenity::Error as DiscordError;
-use toml::ser::Error as SerError;
+use std::io::Error as IoError;
 use toml::de::Error as DeError;
+use toml::ser::Error as SerError;
 
 /// Errors that can occur while the bot is running.
 #[derive(Debug)]
@@ -27,7 +26,7 @@ impl From<DiscordError> for Error {
     fn from(error: DiscordError) -> Self {
         Error::Discord(error)
     }
-}   
+}
 
 impl From<SerError> for Error {
     fn from(error: SerError) -> Self {
@@ -40,4 +39,3 @@ impl From<DeError> for Error {
         Error::TomlDeserialize(error)
     }
 }
-
