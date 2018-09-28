@@ -1,8 +1,7 @@
-
-use std::io::Error as IoError;
 use serenity::Error as DiscordError;
-use toml::ser::Error as SerError;
+use std::io::Error as IoError;
 use toml::de::Error as DeError;
+use toml::ser::Error as SerError;
 
 /// Errors that can occur while the bot is running.
 pub enum Error {
