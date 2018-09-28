@@ -41,6 +41,3 @@ pub enum Result {
     /// The user invoked the command with invalid syntax.
     Syntax,
 }
-
-// When commands are added that can error, a custom error type should be implemented here, with an
-// error type enum.

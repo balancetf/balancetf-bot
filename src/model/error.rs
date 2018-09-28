@@ -1,4 +1,6 @@
 use serenity::Error as DiscordError;
+use std::fmt;
+use std::fmt::{Display, Formatter};
 use std::io::Error as IoError;
 use toml::de::Error as DeError;
 use toml::ser::Error as SerError;
@@ -30,5 +32,17 @@ impl From<DeError> for Error {
 impl From<SerError> for Error {
     fn from(error: SerError) -> Self {
         Error::TomlSerialize(error)
+    }
+}
+
+impl Display for Error {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        // There's probably a much less stupid way to do this
+        match self {
+            Error::Io(why) => return write!(f, "{}", why),
+            Error::Discord(why) => return write!(f, "{}", why),
+            Error::TomlSerialize(why) => return write!(f, "{}", why),
+            Error::TomlDeserialize(why) => return write!(f, "{}", why),
+        }
     }
 }
