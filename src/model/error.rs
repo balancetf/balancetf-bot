@@ -23,15 +23,21 @@ impl From<IoError> for Error {
     }
 }
 
-impl From<DeError> for Error {
-    fn from(error: DeError) -> Self {
-        Error::TomlDeserialize(error)
+impl From<DiscordError> for Error {
+    fn from(error: DiscordError) -> Self {
+        Error::Discord(error)
     }
 }
 
 impl From<SerError> for Error {
     fn from(error: SerError) -> Self {
         Error::TomlSerialize(error)
+    }
+}
+
+impl From<DeError> for Error {
+    fn from(error: DeError) -> Self {
+        Error::TomlDeserialize(error)
     }
 }
 

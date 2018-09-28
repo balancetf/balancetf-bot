@@ -1,3 +1,4 @@
+use super::error::Error;
 use serenity::model::channel::Message;
 
 /// A representation of a command that users can type in chat.
@@ -30,6 +31,21 @@ impl Command {
                     );
                 });
             }
+            Result::InvalidArg(explain) => match msg.channel_id.say(&explain) {
+                Ok(_) => {}
+                Err(why) => {
+                    println!(
+                        "Error sending help message for command:{}\nReason:\n{}",
+                        &self.label, why
+                    );
+                }
+            },
+            Result::Error(why) => {
+                println!(
+                    "Error when running command: {}\nReason:\n{}",
+                    &self.label, why
+                );
+            }
         }
     }
 }
@@ -40,4 +56,8 @@ pub enum Result {
     Ok,
     /// The user invoked the command with invalid syntax.
     Syntax,
+    /// The user made an error when running the command.
+    InvalidArg(String),
+    /// An error occured that wasn't the user's fault.
+    Error(Error),
 }
